@@ -4,22 +4,32 @@
             <div class="row">
                 <!--loop over the collection of products-->
                 <div *ngFor="let p of products" class="col-md-3">
-                    <div class="product-box">
-
-                        <a routerLink="/products/{{p.id}}">
-                            <img src="{{p.imageUrl}}" class="img-responsive">
-                        </a>
-                        
-                        <a routerLink="/products/{{p.id}}">
-                            <h1>{{p.name}}</h1>
-                        </a>
-
-                        <div class="price">
-                            {{p.unitPrice | currency:'USD'}}
+                    <div class="col mb-5">
+                        <div class="card h-100">
+                            <!-- Product image-->
+                            <a routerLink="/products/{{p.id}}">
+                                <img src="{{p.imageUrl}}" class="img-responsive">
+                            </a>
+                            <!-- Product details-->
+                            <div class="card-body p-4">
+                                <div class="text-center">
+                                    <!-- Product name-->
+                                    <a routerLink="/products/{{p.id}}">
+                                        {{p.name}}
+                                    </a>
+                                    <!-- Product price-->
+                                    <div class="price">
+                                        {{p.unitPrice | currency:'USD'}}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Product actions-->
+                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                <div class="text-center">
+                                    <button (click)="addToCart(p)" class="btn btn-primary btn-small">Add to Cart</button>
+                                </div>
+                            </div>
                         </div>
-
-                        <button (click)="addToCart(p)" class="btn btn-primary btn-small">Add to Cart</button>
-
                     </div>
 
                     <!--如果product 是空的，那么就显示一个空页面-->
