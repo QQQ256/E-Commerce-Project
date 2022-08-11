@@ -1,7 +1,7 @@
 <div class="main-content page-m">
     <form [formGroup]="checkoutFormGroup" (submit)="onSubmit()">
         <!--customer form group-->
-        <div class="col-md-7 col-lg-8">
+        <div class="col-md-auto">
             <h3>Customer</h3>
             <!--customer-->
             <form class="row g-3" formGroupName="customer">
@@ -111,6 +111,7 @@
                     </div>
                 </div>
 
+                <!--Country-->
                 <div class="col-md-5">
                     <label for="country" class="form-label">Country</label>
                     <div>
@@ -132,6 +133,7 @@
                     </div>
                 </div>
 
+                 <!--State-->
                 <div class="col-md-4">
                     <label for="state" class="form-label">State</label>
                     <div>
@@ -140,7 +142,7 @@
                                 {{state.name}}
                             </option>
 
-                            <div *ngIf="shippingAddressState.valid && (shippingAddressState.dirty || shippingAddressState.touched)"
+                            <div *ngIf="shippingAddressState.invalid && (shippingAddressState.dirty || shippingAddressState.touched)"
                                 class="alert alert-danger mt-2">
 
                                 <div *ngIf="shippingAddressState?.errors['required']">
@@ -155,9 +157,18 @@
 
                 <div class="col-md-3">
                     <label for="zip" class="form-label">Zip</label>
-                    <input type="text" class="form-control" id="zip" placeholder="" required>
-                    <div class="invalid-feedback">
-                        Zip code required.
+                    <input formControlName="zipCode" type="text" class="form-control">
+
+                    <div *ngIf="shippingAddressZipCode.invalid && (shippingAddressZipCode.dirty || shippingAddressZipCode.touched)" class="alert alert-danger mt-1">
+                        
+                        <div *ngIf="shippingAddressZipCode.errors['required'] || shippingAddressZipCode.errors['notOnlyWhiteSpace']">
+                            ZipCode is Required
+                        </div>
+
+                        <div *ngIf="shippingAddressZipCode.errors['minlength']">
+                            ZipCode must be at least 2 characters long
+                        </div>
+
                     </div>
                 </div>
 

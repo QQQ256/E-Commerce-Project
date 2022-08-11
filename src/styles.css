@@ -519,7 +519,9 @@ input.au-input.au-input-xl{
     background:#fff
 }
 .main-content.page-m{
-    padding: 10% 30% 10% 5%
+    padding: 10% 10% 0 0;
+    max-width: 960px; 
+    margin: auto;
 }
 
 /* 
