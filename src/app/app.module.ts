@@ -29,6 +29,7 @@ import myAppConfig from './config/my-app-config';
 import { MembersPageComponent } from './components/members-page/members-page.component';
 import { OrderHistoryComponent } from './components/order-history/order-history.component';
 import { AuthInterceptorService } from './services/auth-interceptor.service';
+import { NewCheckoutComponent } from './components/new-checkout/new-checkout.component';
 
 const oktaConfig = Object.assign({
   onAuthRequired: (oktaAuth: OktaAuth,injector: any) =>{
@@ -46,7 +47,8 @@ const routes : Routes = [
   {path: 'members', component: MembersPageComponent, canActivate: [OktaAuthGuard]},
   {path: 'login/callback', component: OktaCallbackComponent},
   {path: 'login', component: LoginComponent},
-  {path: 'checkout', component: CheckoutComponent},
+  // {path: 'checkout', component: CheckoutComponent},
+  {path: 'checkout', component: NewCheckoutComponent},
   {path: 'cart-details', component: CartDetailsComponent},
   {path: 'products/:id', component: ProductDetailsComponent},
   {path: 'search/:keyword', component: ProductListComponent},
@@ -72,7 +74,8 @@ const routes : Routes = [
     LoginComponent,
     LoginStatusComponent,
     MembersPageComponent,
-    OrderHistoryComponent
+    OrderHistoryComponent,
+    NewCheckoutComponent
   ],
   imports: [
     RouterModule.forRoot(routes),

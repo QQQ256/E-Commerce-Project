@@ -104,6 +104,10 @@ a,a:hover{
 .section-content-p35{
     padding:0 35px
 }
+/*new checkout*/
+.container {
+    max-width: 960px;
+  }
 
 .page-wrapper{
     overflow:hidden;
