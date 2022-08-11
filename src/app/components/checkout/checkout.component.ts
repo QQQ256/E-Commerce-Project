@@ -5,12 +5,14 @@ import { Observable } from 'rxjs';
 import { Country } from 'src/app/common/country';
 import { Order } from 'src/app/common/order';
 import { OrderItem } from 'src/app/common/order-item';
+import { PaymentInfo } from 'src/app/common/payment-info';
 import { Purchase } from 'src/app/common/purchase';
 import { State } from 'src/app/common/state';
 import { CartService } from 'src/app/services/cart.service';
 import { CheckoutService } from 'src/app/services/checkout.service';
 import { ShopFormService } from 'src/app/services/shop-form.service';
 import { ShopValidators } from 'src/app/validators/shop-validators';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-checkout',
@@ -18,6 +20,16 @@ import { ShopValidators } from 'src/app/validators/shop-validators';
   styleUrls: ['./checkout.component.css']
 })
 export class CheckoutComponent implements OnInit {
+
+  //Disable Payment Button -> html [disable]
+  isDisabled: boolean = false;
+
+  //stripe 
+  //init Stripe API
+  stripe = Stripe(environment.stripePublishableKey);
+  paymentInfo: PaymentInfo = new PaymentInfo();
+  cardElement: any;
+  displayError: any = "";
 
   totalPrice: number = 0;
   totalQuantity: number = 0;
@@ -35,6 +47,8 @@ export class CheckoutComponent implements OnInit {
 
   checkoutFormGroup: FormGroup;
 
+  storage: Storage = sessionStorage;
+
   //从 cartService 里拿totalPrice & totalQuantity
   constructor(private formBuilder: FormBuilder,
               private shopFormService: ShopFormService,
@@ -46,7 +60,10 @@ export class CheckoutComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.reviewCartDetails();
+    //setup stripe payment form 在结账页面用stripe的一个付钱表格
+    this.setupStripePaymentForm();
+
+    const theEmail = JSON.parse(this.storage.getItem('userEmail'));
 
     this.checkoutFormGroup = this.formBuilder.group({
       //第一个组，一个大表格--customer
@@ -54,7 +71,7 @@ export class CheckoutComponent implements OnInit {
         //写validation rules
         firstName: new FormControl('', [Validators.required, Validators.minLength(2), ShopValidators.notOnlyWhiteSpace]),
         lastName: new FormControl('', [Validators.required, Validators.minLength(2), ShopValidators.notOnlyWhiteSpace]),
-        email: new FormControl('', [Validators.required, Validators.pattern('^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')])
+        email: new FormControl(theEmail, [Validators.required, Validators.pattern('^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')])
       }),
       shippingAddress: this.formBuilder.group({
         country: new FormControl('', [Validators.required]),
@@ -71,37 +88,22 @@ export class CheckoutComponent implements OnInit {
         zipCode: new FormControl('', [Validators.required, Validators.minLength(2), ShopValidators.notOnlyWhiteSpace])
       }),
       creditCardInformation: this.formBuilder.group({
-        cardType: new FormControl('', [Validators.required]),
-        nameOnCard: new FormControl('', [Validators.required, Validators.minLength(2), ShopValidators.notOnlyWhiteSpace]),
-        cardNumber: new FormControl('', [Validators.required, Validators.pattern('[0-9]{16}')]),
-        securityCode: new FormControl('', [Validators.required, Validators.pattern('[0-9]{3}')]),
-        expirationMonth: [''],
-        expirationYear: ['']
+        // cardType: new FormControl('', [Validators.required]),
+        // nameOnCard: new FormControl('', [Validators.required, Validators.minLength(2), ShopValidators.notOnlyWhiteSpace]),
+        // cardNumber: new FormControl('', [Validators.required, Validators.pattern('[0-9]{16}')]),
+        // securityCode: new FormControl('', [Validators.required, Validators.pattern('[0-9]{3}')]),
+        // expirationMonth: [''],
+        // expirationYear: ['']
       })
     });
-
-
-    //填充Card Month & Years
-    const startMonth: number = new Date().getMonth() + 1;//start from [0]
-
-    this.shopFormService.getCreditCardMonths(startMonth).subscribe(
-      data =>{
-        this.creditCardMonths = data;
-      }
-    );
-
-    this.shopFormService.getCreditCardYears().subscribe(
-      data =>{
-        this.creditCardYears = data;
-      }
-    );
-
 
     this.shopFormService.getCountries().subscribe(
       data =>{
         this.countries = data;
       }
     );
+
+    this.reviewCartDetails();
     
   }
 
@@ -125,21 +127,24 @@ export class CheckoutComponent implements OnInit {
   get billingAddressState(){ return this.checkoutFormGroup.get('billingAddress.state'); }
   get billingAddressZipCode(){ return this.checkoutFormGroup.get('billingAddress.zipCode'); }
 
-  //credit card getter
-  get creditCardType(){ return this.checkoutFormGroup.get('creditCardInformation.cardType'); }
-  get creditCardNameOnCard(){ return this.checkoutFormGroup.get('creditCardInformation.nameOnCard'); }
-  get creditCardCardNumber(){ return this.checkoutFormGroup.get('creditCardInformation.cardNumber'); }
-  get creditCardSecurityCode(){ return this.checkoutFormGroup.get('creditCardInformation.securityCode'); }
+  // //credit card getter
+  // get creditCardType(){ return this.checkoutFormGroup.get('creditCardInformation.cardType'); }
+  // get creditCardNameOnCard(){ return this.checkoutFormGroup.get('creditCardInformation.nameOnCard'); }
+  // get creditCardCardNumber(){ return this.checkoutFormGroup.get('creditCardInformation.cardNumber'); }
+  // get creditCardSecurityCode(){ return this.checkoutFormGroup.get('creditCardInformation.securityCode'); }
 
 
   onSubmit(){
-    console.log("Handing the submit button");
-    console.log(this.checkoutFormGroup.get('customer').value);
+  
+
+    // console.log("Handing the submit button");
+    // console.log(this.checkoutFormGroup.get('customer').value);
 
     if(this.checkoutFormGroup.invalid){
       this.checkoutFormGroup.markAllAsTouched();
       return;
     }
+
 
     //set up order
     let order = new Order();
@@ -179,22 +184,71 @@ export class CheckoutComponent implements OnInit {
     purchase.order = order;
     purchase.orderItems = orderItem;
 
+    //重新计算钱 + 定义货币
+    this.paymentInfo.amount = Math.round(this.totalPrice * 100);//stripe算钱的规则 100 = 1刀
+    this.paymentInfo.currency = "USD";
+    //加个email --section35
+    this.paymentInfo.receiptEmail = purchase.customer.email;
+
     //call REST API via the checkoutService
-    this.checkoutService.placeOrder(purchase).subscribe(
-      {
-        //next means success
-        next: response => {
-          alert(`Your order has been received.\nOrder tracking number:${response.orderTrackingNumber}`)
-          
-          //重置购物车
-          this.resetCart();
-        },
-        //error means exception
-        error: err => {
-          alert(`There was an error: ${err.message}`);
-        }
-      }
-    );
+    //确保交易是OK的
+    if(!this.checkoutFormGroup.invalid && this.displayError.textContent === ""){
+      //还没付钱呢，还没按呢，设置为TRUE
+      this.isDisabled = true;
+       //调用REST API的POST来向Stripe提交数据！
+    this.checkoutService.createPaymentIntent(this.paymentInfo).subscribe(
+      (paymentIntentResponse) => {
+        //这里直接call stripe api了，数据直接发给Stripe Server，不走数据库
+        this.stripe.confirmCardPayment(paymentIntentResponse.client_secret,{
+          payment_method:{
+            card: this.cardElement,
+            //将customer的其他信息也传给Stripe，并进行保存
+            billing_details: {
+              email: purchase.customer.email,
+              name: `${purchase.customer.firstName} ${purchase.customer.lastName}`,
+              address: {
+              line1: purchase.billingAddress.street,
+              city: purchase.billingAddress.city,
+              state: purchase.billingAddress.state,
+              postal_code: purchase.billingAddress.zipCode,
+              country: this.billingAddressCountry.value.code
+              }
+            }
+          }
+        }, {handleActions: false})
+        //获得result，看看result怎么样
+        .then((result: any) =>{
+          if(result.error){
+            //tell customer that there's an error
+            
+            //有问题
+            this.isDisabled = false;
+
+            alert(`There is an error: ${result.error.message}`);
+          }else{
+            //存储数据到
+            this.checkoutService.placeOrder(purchase).subscribe(
+              {
+                //next means success
+                next: response => {
+                  alert(`Your order has been received.\nOrder tracking number:${response.orderTrackingNumber}`)
+                  
+                  //重置购物车
+                  this.resetCart();
+                  //不论如何，按了按钮，不管你是成功了还是没成功，purchase都不能被按了
+                  this.isDisabled = false;
+                },
+                //error means exception
+                error: err => {
+                  alert(`There was an error: ${err.message}`);
+                  this.isDisabled = false;
+                }
+              }
+            );
+          }
+        })
+      });
+    }
   }
 
   resetCart(){
@@ -202,6 +256,9 @@ export class CheckoutComponent implements OnInit {
     this.cartService.cartItem = [];
     this.cartService.totalPrice.next(0);
     this.cartService.totalQuantity.next(0);
+    
+    //fix bug for reload the page, items fill the shopping cart after paid the order
+    this.cartService.persistCartItems();
 
     //reset the form
     this.checkoutFormGroup.reset();
@@ -276,5 +333,31 @@ export class CheckoutComponent implements OnInit {
     this.cartService.totalPrice.subscribe(
       totalPrice => this.totalPrice = totalPrice
     );
+  }
+
+  
+  setupStripePaymentForm() {
+
+    //get a handle to stripe elements
+    var elements = this.stripe.elements();
+    
+    //create a card element... hide zipCode field
+    this.cardElement = elements.create('card', {hidePostalCode: true});
+
+    //最重要的一句，不写控件没得用
+    //add an instance of card UI component into the 'card-element' div
+    this.cardElement.mount('#card-element');
+
+    //add event handing for the 'change' event on the card element
+    this.cardElement.on('change', (event: any) => {
+      this.displayError = document.getElementById('card-errors');
+
+      if(event.complete){
+        this.displayError.textContent = "";
+      }else{
+        //show validation error to customers
+        this.displayError.textContent = event.error?.message;
+      }
+    });
   }
 }

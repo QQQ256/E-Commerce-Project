@@ -14,8 +14,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": [
-              "raf",
-              "@babel/runtime-corejs3"
+              "lodash"
               ],
             "outputPath": "dist/angular-ecommerce",
             "index": "src/index.html",
@@ -56,6 +55,14 @@
               ],
               "outputHashing": "all"
             },
+            "qa":{
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.qa.ts"
+                }
+              ]
+            },
             "development": {
               "buildOptimizer": false,
               "optimization": false,
@@ -72,6 +79,9 @@
           "configurations": {
             "production": {
               "browserTarget": "angular-ecommerce:build:production"
+            },
+            "qa":{
+              "browserTarget": "angular-ecommerce:build:qa"
             },
             "development": {
               "browserTarget": "angular-ecommerce:build:development"

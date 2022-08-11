@@ -14,7 +14,20 @@ export class CartService {
   totalPrice: Subject<number> = new BehaviorSubject<number>(0);
   totalQuantity: Subject<number> = new BehaviorSubject<number>(0);
 
-  constructor() { }
+  //存储当前页面的数据，并在同一页面下使用
+  storage: Storage = sessionStorage;
+  // storage: Storage = localStorage;
+
+  constructor() {
+    //从storage读取cartItems的数据 JS object -> object
+    let data = JSON.parse(this.storage.getItem('cartItems'));
+
+    if(data != null){
+      this.cartItem = data;
+      //刷新页面后最先走的是构造函数，所以这儿通过cartItem就可以重新再计算一波
+      this.computeCartTotals();
+    }
+   }
 
   addToCart(theCartItem: CartItem){
     //检查是否已经存在于cart
@@ -49,6 +62,11 @@ export class CartService {
     this.computeCartTotals();
   }
 
+  persistCartItems(){
+    //              convert object ---> string
+    this.storage.setItem('cartItems', JSON.stringify(this.cartItem));
+  }
+
   computeCartTotals(){
       let totalPriceValue: number = 0;
       let totalQuantityValue: number = 0;
@@ -63,7 +81,10 @@ export class CartService {
       this.totalQuantity.next(totalQuantityValue);
 
       //log一下，直观可靠
-      this.logCartData(totalPriceValue, totalQuantityValue);
+      // this.logCartData(totalPriceValue, totalQuantityValue);
+
+      //构造器中读取数据，这里再存储数据
+      this.persistCartItems();
   }
 
   //移除一个item

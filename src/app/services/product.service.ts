@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable, ObservedValueOf } from 'rxjs';
+import { environment } from 'src/environments/environment';
 import { Product } from '../common/product';
 import { ProductCategory } from '../common/product-category';
 
@@ -11,8 +12,8 @@ export class ProductService {
   
   //有点像订阅者，可以传递events，各种消息和数据
 
-  private baseUrl = 'http://localhost:8080/api/products'; /* REST API GET所有student的link */
-  private categoryUrl = 'http://localhost:8080/api/product-category';//已经暴露的categoryUrl
+  private baseUrl = environment.shopApiUrl + '/products'; /* REST API GET所有student的link */
+  private categoryUrl = environment.shopApiUrl + '/product-category';//已经暴露的categoryUrl
 
   constructor(private httpClient : HttpClient){ /* 将HttpClient注入到该构造函数中，可以使用其中的各种request */
 

@@ -15,31 +15,29 @@
                         </td>
 
                         <td>
-                            <p>{{item.name}}</p>
-                            <p>{{item.unitPrice}}</p>
+                            <p>Product Name: {{item.name}}</p>
+                            <p>Price: {{item.unitPrice | currency:"USD"}}</p>
                         </td>
 
                         <td>
                             <div class="items">
                                 <label>Quantity:</label>
                                 <div class="row no-gutters">
-                                    <div class="col">
+                                    <div class="col-6 col-sm-3">
                                         <button (click)="incrementQuantity(item)" class="btn btn-primary btn-sm">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                     </div>
 
-                                    <div class="col ml-4 mr-2">
+                                    <div class="col-6 col-sm-3">
                                         {{item.quantity}}
                                     </div>
 
-                                    <div class="col">
+                                    <div class="col-6 col-sm-3">
                                         <button (click)="decrementQuantity(item)" class="btn btn-primary btn-sm">
                                             <i class="fas fa-minus"></i>
                                         </button>
                                     </div>
-
-                                    <div class="col-8"></div>
                                 </div>
                                 <hr>
                                 <button (click)="remove(item)" class="btn btn-primary btn-sm">

@@ -2,7 +2,7 @@ import { InjectionToken, Injector, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
-import { HttpClientModule} from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
 import { ProductService } from './services/product.service';
 import { Routes, RouterModule, Router } from '@angular/router';
 import { ProductCategoryMenuComponent } from './components/product-category-menu/product-category-menu.component';
@@ -21,13 +21,17 @@ import { LoginStatusComponent } from './components/login-status/login-status.com
 import{
   OKTA_CONFIG,
   OktaAuthModule,
-  OktaCallbackComponent
+  OktaCallbackComponent,
+  OktaAuthGuard
 } from '@okta/okta-angular';
 
 import myAppConfig from './config/my-app-config';
+import { MembersPageComponent } from './components/members-page/members-page.component';
+import { OrderHistoryComponent } from './components/order-history/order-history.component';
+import { AuthInterceptorService } from './services/auth-interceptor.service';
 
 const oktaConfig = Object.assign({
-  onAuthRequired: (injector: any) =>{
+  onAuthRequired: (oktaAuth: OktaAuth,injector: any) =>{
     const router = injector.get(Router);
 
     //redirect the user to the custom login page
@@ -38,6 +42,8 @@ const oktaConfig = Object.assign({
 const oktaAuth = new OktaAuth(oktaConfig);
 
 const routes : Routes = [
+  {path: 'order-history', component: OrderHistoryComponent, canActivate: [OktaAuthGuard]},
+  {path: 'members', component: MembersPageComponent, canActivate: [OktaAuthGuard]},
   {path: 'login/callback', component: OktaCallbackComponent},
   {path: 'login', component: LoginComponent},
   {path: 'checkout', component: CheckoutComponent},
@@ -51,6 +57,8 @@ const routes : Routes = [
   {path: '**', redirectTo: '/products', pathMatch: 'full'},
 ];
 
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -62,7 +70,9 @@ const routes : Routes = [
     CartDetailsComponent,
     CheckoutComponent,
     LoginComponent,
-    LoginStatusComponent
+    LoginStatusComponent,
+    MembersPageComponent,
+    OrderHistoryComponent
   ],
   imports: [
     RouterModule.forRoot(routes),
@@ -73,7 +83,10 @@ const routes : Routes = [
     OktaAuthModule
   ],
   // providers: [ProductService], /* 配置项目所需要的服务 */
-  providers: [ProductService, { provide: OKTA_CONFIG, useValue: {oktaAuth}}],
+  providers: [ProductService, { provide: OKTA_CONFIG, useValue: {oktaAuth, OktaAuthGuard}},
+    //token for http interceptors, resgister Service as an Http intersceptor, inform Angular that HTTP_INTERCEPTORS is a token for injection an array of values
+              {provide: HTTP_INTERCEPTORS, useClass:AuthInterceptorService, multi: true}],
+  // providers: [ProductService, { provide: OKTA_CONFIG, useValue: {oktaAuth, OktaAuthGuard}}],            
   bootstrap: [AppComponent] /* 指定应用的主视图通过引导根APPModule来启动应用 */
 })
 export class AppModule { }
