@@ -93,7 +93,19 @@
                                         class="text-muted">Total Price</strong>
                                     <h5 class="font-weight-bold">{{totalPrice | currency:'USD'}}</h5>
                                 </li>
-                            </ul><a routerLink="/checkout" class="btn btn-dark rounded-pill py-2 btn-block">Procceed to checkout</a>
+                            </ul>
+                            <div *ngIf="isAuthenticated">
+                                <a routerLink="/checkout" class="btn btn-dark rounded-pill py-2 btn-block">
+                                    Procceed to checkout
+                                </a>
+                            </div>
+
+                            <div *ngIf="!isAuthenticated">
+                                <a  routerLink="/login" class="btn btn-dark rounded-pill py-2 btn-block">
+                                    Procceed to checkout
+                                </a>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
