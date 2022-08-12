@@ -39,6 +39,10 @@
                 </div>
             </div>
 
+            <div *ngIf="products.length <= 0" class="alert alert-warning col-md-12" role="alert">
+                No Such Product.
+            </div>
+
             <!--切换页面组件-->
             <div class="footer-pagination">
                 <div class="row">
