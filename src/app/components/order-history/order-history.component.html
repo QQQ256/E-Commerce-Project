@@ -2,23 +2,37 @@
     <div class="section-content section-content-p30">
         <div class="container-fluid">
             <h3>Your Orders</h3>
-            <div *ngIf="orderHistoryList.length > 0">
-                <table class="table table-bordered">
-                    <tr>
-                        <th width="20%">Order Tracking Number</th>
-                        <th width="10%">Total Price</th>
-                        <th width="10%">Total Quantity</th>
-                        <th width="10%">Date</th>
-                    </tr>
-            
-                    <tr *ngFor="let list of orderHistoryList">
-                        <td>{{list.orderTrackingNumber}}</td>
-                        <td>{{list.totalPrice | currency:'USD'}}</td>
-                        <td>{{list.totalQuantity}}</td>
-                        <td>{{list.dateCreated | date:'medium'}}</td>
-                    </tr>
-            
+            <div class="row py-5 p-4 bg-white rounded shadow-sm align-middle">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="border-0 bg-light">
+                                <div class="p-2 px-3 text-uppercase">Order Tracking Number</div>
+                            </th>
+                            <th scope="col" class="border-0 bg-light">
+                                <div class="py-2 text-uppercase">Total Price</div>
+                            </th>
+                            <th scope="col" class="border-0 bg-light">
+                                <div class="py-2 text-uppercase">Total Quantity</div>
+                            </th>
+                            <th scope="col" class="border-0 bg-light">
+                                <div class="py-2 text-uppercase">Date</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       
+                        <tr *ngFor="let list of orderHistoryList">
+                            <td>{{list.orderTrackingNumber}}</td>
+                            <td>{{list.totalPrice | currency:'USD'}}</td>
+                            <td>{{list.totalQuantity}}</td>
+                            <td>{{list.dateCreated | date:'medium'}}</td>
+                        </tr>
+                    </tbody>
                 </table>
+           
+            <div *ngIf="orderHistoryList.length <= 0" class="alert alert-warning col-md-12" role="alert">
+                You did'nt buy anything.
             </div>
         </div>
     </div>
