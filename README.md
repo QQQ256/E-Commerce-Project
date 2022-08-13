@@ -1,3 +1,3 @@
 Here's the overview of this website!
 
-![image] (https://github.com/QQQ256/E-Commerce-Project/blob/master/img/Checkout.png)
+(https://github.com/QQQ256/E-Commerce-Project/blob/master/img/Checkout.png)
